@@ -22,13 +22,13 @@ namespace ChocoCompare
                     localRepo = Properties.Settings.Default.LocalRepo;
                     chocoRepo = Properties.Settings.Default.ChocoRepo;
                     Console.WriteLine("No settings found, please specify your repository locations");
-                    Console.Write("Chocolatey Repository [$1] (Please enter to keep): ", chocoRepo);
+                    Console.Write("Chocolatey Repository [{0}] (Please enter to keep): ", chocoRepo);
                     string respone = Console.ReadLine();
                     if (!string.IsNullOrEmpty(respone))
                     {
                         chocoRepo = respone;
                     }
-                    Console.Write("Local Repository [$1] (Please enter to keep): ", localRepo);
+                    Console.Write("Local Repository [{0}] (Please enter to keep): ", localRepo);
                     respone = Console.ReadLine();
                     if (!string.IsNullOrEmpty(respone))
                     {
