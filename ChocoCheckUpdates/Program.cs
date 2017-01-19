@@ -11,16 +11,19 @@ namespace ChocoCompare
     {
         static void Main(string[] args)
         {
+            Properties.Settings.Default.Upgrade();
+
             string chocoRepo = string.Empty;
             string localRepo = string.Empty;
-            
+
             if (args.Count() == 0)
             {
+                localRepo = Properties.Settings.Default.LocalRepo;
+                chocoRepo = Properties.Settings.Default.ChocoRepo;
+
                 // No parameters provides, so check the config - and if there are none there prompt the user interactively.
                 if (string.IsNullOrEmpty(Properties.Settings.Default.LocalRepo) || string.IsNullOrEmpty(Properties.Settings.Default.ChocoRepo))
                 {
-                    localRepo = Properties.Settings.Default.LocalRepo;
-                    chocoRepo = Properties.Settings.Default.ChocoRepo;
                     Console.WriteLine("No settings found, please specify your repository locations");
                     Console.Write("Chocolatey Repository [{0}] (Please enter to keep): ", chocoRepo);
                     string respone = Console.ReadLine();
@@ -68,15 +71,19 @@ namespace ChocoCompare
                 Console.WriteLine("Error: Local repository must be specified and can not be left blank");
                 Environment.Exit(12);
             }
-            
-            IPackageRepository pubRepo = PackageRepositoryFactory.Default.CreateRepository(chocoRepo);
-            IPackageRepository choRepo= PackageRepositoryFactory.Default.CreateRepository(localRepo);
 
-            var packages = choRepo.GetPackages();
+            IPackageRepository pubRepo = PackageRepositoryFactory.Default.CreateRepository(chocoRepo);
+            IPackageRepository choRepo = PackageRepositoryFactory.Default.CreateRepository(localRepo);
+
+            var localPackages = choRepo.GetPackages();
             List<IPackage> packagesToUpdate = new List<IPackage>();
 
-            foreach (IPackage p in packages)
+            var packagesGroup = from localp in localPackages group localp by localp.Id into packageIdGroup select packageIdGroup;
+
+            foreach (var grouping in packagesGroup)
             {
+                // Get the latest version of this package.
+                IPackage p = grouping.OrderByDescending(s => s.Version).First();
                 string packageName = p.Title;
                 if (string.IsNullOrEmpty(packageName))
                 {
@@ -99,6 +106,7 @@ namespace ChocoCompare
                     }
                 }
                 Console.WriteLine();
+
             }
 
             Console.WriteLine("Finished checking packages; there are {0} packages to update.", packagesToUpdate.Count);
